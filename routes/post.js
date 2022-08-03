@@ -1,18 +1,18 @@
+// dependencies
 const express = require("express");
 const router = express.Router();
 const postModel = require("../models/postData.js");
 
 //routes
-// router.get("/:userId/:postId", () => {});
-router.get("/", (request, response) => {
-  response.send("<h1>Hello from router posts.js</h1>");
-});
 
+//POST
 router.post("/", (request, response) => {
-  const input = request.body; //saving info coming from browser
+  // object request.body contains info that is sent from browser
+  const input = request.body;
 
   const newDocument = new postModel({
     //js object that will be saved into mongoDB
+    author: input.author,
     title: input.title,
     content: input.content,
     // author: request.user._id,
@@ -37,5 +37,24 @@ router.post("/", (request, response) => {
   });
 });
 
-// used to make information avail across the app
+// GET ALL
+router.post("/all", (request, response) => {
+  postModel.find((err, docs) => {
+    if (err) {
+      console.log("ERROR " + err);
+      response
+        .status(500)
+        .json({ message: "Problems when reading the information." });
+    } else {
+      // if everything is working
+      console.log("All the posts were found.");
+      response.status(200).json({ docs });
+    }
+  });
+});
+
+// GET ONE
+// router.get("/:userId/:postId", () => {});
+
+// used to export/make information avail across the app
 module.exports = router;
