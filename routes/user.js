@@ -5,6 +5,8 @@ const HttpError = require("http-error");
 
 
 
+
+
 //route to sign up a user
 router.post("/signup", (request, response) => {
   const input = request.body;
@@ -41,27 +43,8 @@ router.post("/signup", (request, response) => {
 
 
 
-// Route to get all the users
-router.get("/all", async (req, res, next) => {
-  let users;
-  // try {
-    users = await userModel.find({}, '-password');
-  // } catch (err) {
-  //   const error = new HttpError(
-  //     'Fetching users failed, please try again later.',
-  //     500
-  //   );
-  //   return next(error);
-  // }
-  res.json({ users: users.map(user => user.toObject({ getters: true })) });
-});
 
-
-
-
-
-
-// Route to log in a user
+// Route to login a user
 router.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
 
@@ -89,6 +72,24 @@ console.log('error')
   res.json({message: 'Logged in!'});
 });
 
+
+
+
+
+// Route to get all the users
+router.get("/all", async (req, res, next) => {
+  let users;
+  // try {
+    users = await userModel.find({}, '-password');
+  // } catch (err) {
+  //   const error = new HttpError(
+  //     'Fetching users failed, please try again later.',
+  //     500
+  //   );
+  //   return next(error);
+  // }
+  res.json({ users: users.map(user => user.toObject({ getters: true })) });
+});
 
 
 
