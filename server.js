@@ -1,7 +1,11 @@
+// dependencies
 const express = require("express");
 const app = express();
 const path = require("path"); //included w/ nodejs
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const { request } = require("http");
+const { response } = require("express");
 
 // connection to mongodb
 mongoose.connect(
@@ -14,23 +18,30 @@ mongoose.connect(
   }
 );
 
+// method used to let us know if there was an error connecting
 mongoose.connection.on("error", (err) => {
   console.log("ERROR: " + err);
 });
 
+// If connection is working
 mongoose.connection.once("open", () => {
   console.log("The connection to MongoDB is working");
 });
 
-// parsing the information that comes from web browser
-app.use(express.json());
+// takes input that comes from browser and formats as json object
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-// static web server
+// static web server to test web server
 app.use(express.static(path.join(__dirname, "public")));
 
-//register routers
+//REST API (register routers with files that contains code that is run when path is used)
 app.use("/api/users", require("./routes/user.js"));
 app.use("/api/posts", require("./routes/post.js"));
+
+app.get("*", (request, response) => {
+  response.send("<h1>ERROR 404: Page Not Found</h1>");
+});
 
 //get is http method to establish communication
 //between server and the browser

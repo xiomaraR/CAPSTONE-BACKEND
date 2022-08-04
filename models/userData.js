@@ -1,6 +1,6 @@
 const mongoose = require("mongoose"),
   Schema = mongoose.Schema,
-  uniqueValidator = require("mongoose-unique-validator"),
+  // uniqueValidator = require("mongoose-unique-validator"),
   bcrypt = require("bcrypt"),
   SALT_WORK_FACTOR = 10;
 
@@ -9,11 +9,11 @@ const Email = new Schema({
     type: String,
     lowercase: true,
     required: [true, "can't be blank"],
-    match: [/\S+@\S+\.\S+/, "is invalid"],
+    // match: [/\S+@\S+\.\S+/, "is invalid"],
     index: true,
   },
   // Change the default to true if you don't need to validate a new user's email address
-  validated: { type: Boolean, default: false },
+  // validated: { type: Boolean, default: true },
 });
 
 const Point = new mongoose.Schema({
@@ -40,7 +40,7 @@ const UserSchema = new Schema(
     },
     //Our password is hashed with bcrypt
     password: { type: String, required: true },
-    email: { type: Email, required: true },
+    email: { type: Email, required: false },
     profile: {
       firstName: String,
       lastName: String,
@@ -59,31 +59,37 @@ const UserSchema = new Schema(
       },
     },
     active: { type: Boolean, default: true },
-    posts: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
-    },
+    // posts: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Post",
+    //   required: true,
+    // },
   },
   {
     timestamps: true,
   },
   {
-    _id: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
+UserSchema.virtual("id", {
+  id: this.id,
+});
+
 // adds pre-save validation for unique fields within a Mongoose schema
-UserSchema.plugin(uniqueValidator, { message: "is already taken." });
+// UserSchema.plugin(uniqueValidator, { message: "is already taken." });
 
 // pre("save") function to hash the user password
-UserSchema.pre("save", (next) => {
-  // only hash the password if it has been modified (or is new)
-  if (!this.isModified("password")) {
-    return next();
-  }
-  this.password = bcrypt.hashSync(this.password, 10);
-  next();
-});
+// UserSchema.pre("save", (next) => {
+// only hash the password if it has been modified (or is new)
+//   if (!this.isModified("password")) {
+//     return next();
+//   }
+//   this.password = bcrypt.hashSync(this.password, 10);
+//   next();
+// });
 
 // function to verify password
 UserSchema.methods.comparePassword = function (plaintext, callback) {
