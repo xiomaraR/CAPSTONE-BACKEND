@@ -38,7 +38,7 @@ router.post("/", (request, response) => {
 });
 
 // GET ALL
-router.post("/all", (request, response) => {
+router.get("/all", (request, response) => {
   postModel.find((err, docs) => {
     if (err) {
       console.log("ERROR " + err);
@@ -54,7 +54,67 @@ router.post("/all", (request, response) => {
 });
 
 // GET ONE
-// router.get("/:userId/:postId", () => {});
+router.get("/:postId", (request, response) => {
+  postModel.findOne(
+    {
+      _id: request.params.postId,
+    },
+    (err, post) => {
+      if (err) {
+        console.log("ERROR " + err);
+        response.status(500).json({ message: "Problems when reading post." });
+      } else {
+        console.log("Post was successfully found.");
+        response.status(200).json(post);
+      }
+    }
+  );
+});
+
+//UPDATE
+router.put("/:postId", (request, response) => {
+  const input = request.body;
+
+  postModel.updateOne(
+    {
+      _id: request.params.postId,
+    },
+    { author: input.author, title: input.title, content: input.content },
+    (err, result) => {
+      if (err) {
+        console.log("ERROR " + err);
+        response
+          .status(500)
+          .json({ message: "problems updating information." });
+      } else {
+        console.log("Post successfully updated.");
+        response.status(200).json({ message: "Post successfully updated." });
+      }
+    }
+  );
+});
+
+//DELETE
+router.delete("/:postId", (request, response) => {
+  postModel.deleteOne(
+    {
+      _id: request.params.postId,
+    },
+    (err) => {
+      if (err) {
+        console.log("ERROR " + err);
+        response
+          .status(500)
+          .json({ message: "Problems finding post to delete." });
+      } else {
+        console.log("Post successfully deleted from mongoDB.");
+        response
+          .status(200)
+          .json({ message: "Post successfully deleted from mongoDB." });
+      }
+    }
+  );
+});
 
 // used to export/make information avail across the app
 module.exports = router;
