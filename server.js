@@ -6,17 +6,25 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const { request } = require("http");
 const { response } = require("express");
+const dotenv = require("dotenv")
+
+// To set up Heroku
+const PORT = process.env.PORT || 5000
 
 // connection to mongodb
+
+dotenv.config()
+
+// console.log(process.env)
 mongoose.connect(
-  "mongodb+srv://FluffyFriends:4z6NIVZAQeLoUBrw" +
-    "@petscluster.uivel.mongodb.net/petsDatabase" +
-    "?retryWrites=true&w=majority",
+  process.env.MONGODB_CONNECTION_STRING,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   }
-);
+)
+  .then(() => console.log("MongoDB has been connected"))
+  .catch((err) => console.log( err));
 
 // method used to let us know if there was an error connecting
 mongoose.connection.on("error", (err) => {
@@ -53,7 +61,7 @@ app.get("*", (request, response) => {
 // }); once you have html page in public folder for static web server you don't need above code as server handler
 
 // setting up the port
-app.listen(5000, () => {
+app.listen(PORT, () => {
   // if everything is working this will display in console
   console.log("Listening at localhost:5000");
 });
