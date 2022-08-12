@@ -12,7 +12,7 @@ router.post("/", (request, response) => {
 
   const newDocument = new postModel({
     //js object that will be saved into mongoDB
-    author: input.author,
+    // author: input.author,
     title: input.title,
     content: input.content,
     // author: request.user._id,
