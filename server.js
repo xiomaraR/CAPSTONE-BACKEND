@@ -1,4 +1,5 @@
 // dependencies
+const cors = require("cors");
 const express = require("express");
 const app = express();
 const path = require("path"); //included w/ nodejs
@@ -7,6 +8,9 @@ const bodyParser = require("body-parser");
 const { request } = require("http");
 const { response } = require("express");
 const dotenv = require("dotenv")
+
+
+app.use(cors());
 
 // To set up Heroku
 const PORT = process.env.PORT || 5000
