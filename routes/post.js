@@ -1,5 +1,6 @@
 // dependencies
 const express = require("express");
+const { resolvePath } = require("react-router-dom");
 const router = express.Router();
 const postModel = require("../models/postData.js");
 
@@ -12,9 +13,11 @@ router.post("/", (request, response) => {
 
   const newDocument = new postModel({
     //js object that will be saved into mongoDB
-    author: input.author,
     title: input.title,
     content: input.content,
+    postedBy: input.postedBy,
+    date: input.date,
+    timeStamp: input.timeStamp,
     // author: request.user._id,
   });
 
@@ -30,6 +33,14 @@ router.post("/", (request, response) => {
       //everything is working
       console.log("Post successfully submitted. ");
       response.status(200).json({
+        post: {
+          title: newDocument.title,
+          content: newDocument.content,
+          postedBy: newDocument.postedBy,
+          date: newDocument.date,
+          timeStamp: newDocument.timeStamp,
+        },
+
         message: "The post was saved.",
         success: true,
       });
@@ -62,13 +73,32 @@ router.get("/:postId", (request, response) => {
     (err, post) => {
       if (err) {
         console.log("ERROR " + err);
-        response.status(500).json({ message: "Problems when reading post." });
+        response.status(500).json({ message: "Problems reading post." });
       } else {
         console.log("Post was successfully found.");
         response.status(200).json(post);
       }
     }
   );
+});
+
+router.get("/myposts", (request, response) => {
+  postModel
+    .find(
+      {
+        postedBy: request.user._id,
+      },
+      (err, post) => {
+        if (err) {
+          console.log("ERROR " + err);
+          response.status(500).json({ message: "Problems reading posts." });
+        } else {
+          console.log("Posts were successfully found.");
+          response.status(200).json(post);
+        }
+      }
+    )
+    .populate("postedBy");
 });
 
 //UPDATE

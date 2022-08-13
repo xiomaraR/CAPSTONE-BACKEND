@@ -1,22 +1,23 @@
 // dependencies
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const path = require("path"); //included w/ nodejs
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const { request } = require("http");
-const { response } = require("express");
+// const { request } = require("http");
+// const { response } = require("express");
+
+// adding cors to app
+app.use(cors());
 
 // connection to mongodb
-mongoose.connect(
-  "mongodb+srv://FluffyFriends:4z6NIVZAQeLoUBrw" +
-    "@petscluster.uivel.mongodb.net/petsDatabase" +
-    "?retryWrites=true&w=majority",
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+require("dotenv").config();
+
+mongoose.connect(process.env.MONGODB_CONNECTION_STRING, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 // method used to let us know if there was an error connecting
 mongoose.connection.on("error", (err) => {
@@ -36,8 +37,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 //REST API (register routers with files that contains code that is run when path is used)
-app.use("/api/users", require("./routes/user.js"));
-app.use("/api/posts", require("./routes/post.js"));
+app.use("/users", require("./routes/user.js"));
+app.use("/posts", require("./routes/post.js"));
 
 app.get("*", (request, response) => {
   response.send("<h1>ERROR 404: Page Not Found</h1>");
