@@ -2,11 +2,9 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const path = require("path"); //included w/ nodejs
+const path = require("path");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-// const { request } = require("http");
-// const { response } = require("express");
 
 // adding cors to app
 app.use(cors());
@@ -43,15 +41,6 @@ app.use("/posts", require("./routes/post.js"));
 app.get("*", (request, response) => {
   response.send("<h1>ERROR 404: Page Not Found</h1>");
 });
-
-//get is http method to establish communication
-//between server and the browser
-// parameters inside get are addresses, slash represents homepage
-// request and response are the callback functions
-// app.get("/", (request, response) => {
-// sending a response to the browser
-//   response.send("<h1>Hello from web server!!!</h1>");
-// }); once you have html page in public folder for static web server you don't need above code as server handler
 
 // setting up the port
 app.listen(5000, () => {

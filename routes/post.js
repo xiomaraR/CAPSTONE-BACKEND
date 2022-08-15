@@ -1,27 +1,24 @@
 // dependencies
 const express = require("express");
-const { resolvePath } = require("react-router-dom");
 const router = express.Router();
-const postModel = require("../models/postData.js");
+const User = require("../models/userData");
+const Post = require("../models/postData");
 
 //routes
 
 //POST
-router.post("/", (request, response) => {
+router.post("/createpost", (request, response) => {
   // object request.body contains info that is sent from browser
   const input = request.body;
 
-  const newDocument = new postModel({
+  const newPost = new Post({
     //js object that will be saved into mongoDB
     title: input.title,
     content: input.content,
-    postedBy: input.postedBy,
-    date: input.date,
-    timeStamp: input.timeStamp,
-    // author: request.user._id,
+    zipcode: input.zipcode,
   });
 
-  newDocument.save((err, doc) => {
+  newPost.save((err, doc) => {
     // if an error occurs while saving info this if block will run
     if (err) {
       console.log("ERROR: " + err);
@@ -34,11 +31,12 @@ router.post("/", (request, response) => {
       console.log("Post successfully submitted. ");
       response.status(200).json({
         post: {
-          title: newDocument.title,
-          content: newDocument.content,
-          postedBy: newDocument.postedBy,
-          date: newDocument.date,
-          timeStamp: newDocument.timeStamp,
+          title: newPost.title,
+          content: newPost.content,
+          zipcode: newPost.zipcode,
+          // postedBy: newPost.postedBy
+          // date: newPost.date,
+          // timeStamp: newPost.timeStamp,
         },
 
         message: "The post was saved.",
@@ -48,9 +46,26 @@ router.post("/", (request, response) => {
   });
 });
 
+// Create post by user
+router.get("/createpost/:userId", async (req, res) => {
+  const post = await Post.create(req.body); // create new post
+  const user = await User.findById(req.params.userId); // get existing user
+
+  // associate post with user
+  post.postedBy = user;
+  post.save();
+
+  // associate user with post
+  user.posts.push(post);
+  user.save();
+
+  // send back post as response with author populated
+  res.json(await post.populate("postedBy"));
+});
+
 // GET ALL
 router.get("/all", (request, response) => {
-  postModel.find((err, docs) => {
+  Post.find((err, docs) => {
     if (err) {
       console.log("ERROR " + err);
       response
@@ -66,7 +81,7 @@ router.get("/all", (request, response) => {
 
 // GET ONE
 router.get("/:postId", (request, response) => {
-  postModel.findOne(
+  Post.findOne(
     {
       _id: request.params.postId,
     },
@@ -82,7 +97,8 @@ router.get("/:postId", (request, response) => {
   );
 });
 
-router.get("/myposts", (request, response) => {
+// Get a user's posts
+router.get("/myPosts", (request, response) => {
   postModel
     .find(
       {

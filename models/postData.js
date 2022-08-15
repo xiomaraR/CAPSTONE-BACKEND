@@ -3,19 +3,12 @@ const mongoose = require("mongoose");
 
 const PostSchema = new mongoose.Schema(
   {
-    // id: {
-    //   type: mongoose.Types.ObjectId,
-    //   auto: true,
-    // },
-    // author: {
-    // type: mongoose.Schema.Types.ObjectId,
-    //   type: String,
-    //   ref: "User",
-    //   required: false,
-    // },
     title: {
       type: String,
       required: true,
+    },
+    zipcode: {
+      type: String,
     },
     content: {
       type: String,

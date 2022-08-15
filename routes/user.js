@@ -1,61 +1,78 @@
 const express = require("express");
 const router = express.Router();
-const userModel = require("../models/userData.js");
-// const userModel = require("..models/userData.js");
+const User = require("../models/userData.js");
+const { check, validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
 
 //routes
-//POST
-router.post("/signup", (request, response) => {
-  const input = request.body;
 
-  const newDocument = new userModel({
-    //js object that will be saved into mongoDB
-    username: input.username,
-    password: input.password,
-    // email: input.email,
-    profile: input.profile,
-    // author: request.user._id,
-  });
+//POST sign up user
+let validations = [
+  check("email")
+    .isEmail()
+    .withMessage("The email you have entered is not valid"),
 
-  newDocument.save((err, doc) => {
-    // if an error occurs while saving info this if block will run
-    if (err) {
-      console.log("ERROR: " + err);
-      response.status(500).json({
-        message: "Problems registering User.",
-        success: false,
-      });
-    } else {
-      //everything is working
-      console.log("User successfully registered. ");
-      response.status(200).json({
-        message: "The user was registered.",
-        success: true,
-      });
-    }
-  });
+  check("password")
+    .isLength({ min: 5 })
+    .withMessage("The password must have at least 5 characters"),
+];
+
+router.post("/signup", validations, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const err = {};
+    errors.array().forEach((error) => {
+      err[error.param] = error.msg;
+    });
+    return res.status(422).json({ errors: err });
+  }
+
+  const password = req.body.password;
+  const email = req.body.email;
+  const username = req.body.username;
+
+  try {
+    let user = await User.findOne({ email, username });
+    if (user) return res.status(400).send("User already registered.");
+
+    user = new User({ email, password, username });
+    // const salt = await bcrypt.genSalt(10);
+    // user.password = await bcrypt.hash(user.password, salt);
+    user = await user.save();
+
+    res.send(user);
+    console.log("new user: ", user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong");
+  }
 });
 
-// LOGIN
-router.post("/login", (request, response) => {
-  const { username, password } = request.body;
+//POST sign in user
+router.post("/login", async (req, res) => {
+  console.log(req);
+  const user = await User.findOne({ email: req.body.email }, "password");
 
-  let existingUser;
+  if (user) {
+    console.log(user);
+    // check user password with hashed password stored in the database
+    const validPassword = await bcrypt.compare(req.body.password);
 
-  existingUser = userModel.findOne({ username: username }, (err, post) => {
-    if (err) {
-      console.log("ERROR " + err);
-      response.status(500).json({ message: "Problems logging in." });
+    console.log(user.password);
+    console.log(req.body.password);
+    if (validPassword) {
+      res.status(200).json({ message: "Valid password" });
     } else {
-      console.log("User was successfully found.");
-      response.status(200).json({ message: "User successfully logged in." });
+      res.status(400).json({ error: "testing error" });
     }
-  });
+  } else {
+    res.status(401).json({ error: "User does not exist" });
+  }
 });
 
 // GET ALL
 router.get("/all", (request, response) => {
-  userModel.find({}, "-password", (err, docs) => {
+  User.find({}, "-password", (err, docs) => {
     if (err) {
       console.log("ERROR " + err);
       response
@@ -70,28 +87,28 @@ router.get("/all", (request, response) => {
 });
 
 // GET ONE
-router.get("/:userId", (request, response) => {
-  userModel.findOne(
-    {
-      _id: request.params.userId,
-    },
-    (err, post) => {
-      if (err) {
-        console.log("ERROR " + err);
-        response.status(500).json({ message: "Problems when reading user." });
-      } else {
-        console.log("User was successfully found.");
-        response.status(200).json(post);
-      }
-    }
-  );
-});
+// router.get("/:userId", (request, response) => {
+//   userModel.findOne(
+//     {
+//       _id: request.params.userId,
+//     },
+//     (err, post) => {
+//       if (err) {
+//         console.log("ERROR " + err);
+//         response.status(500).json({ message: "Problems when reading user." });
+//       } else {
+//         console.log("User was successfully found.");
+//         response.status(200).json(post);
+//       }
+//     }
+//   );
+// });
 
 //UPDATE
 router.put("/:userId", (request, response) => {
   const input = request.body;
 
-  userModel.updateOne(
+  User.updateOne(
     {
       _id: request.params.userId,
     },
@@ -117,7 +134,7 @@ router.put("/:userId", (request, response) => {
 
 //DELETE
 router.delete("/:userId", (request, response) => {
-  userModel.deleteOne(
+  User.deleteOne(
     {
       _id: request.params.userId,
     },

@@ -1,38 +1,10 @@
-const mongoose = require("mongoose"),
-  Schema = mongoose.Schema,
-  uniqueValidator = require("mongoose-unique-validator"),
-  bcrypt = require("bcrypt"),
-  SALT_WORK_FACTOR = 10;
-
-const Email = new Schema({
-  address: {
-    type: String,
-    lowercase: true,
-    required: [true, "can't be blank"],
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      "Please fill a valid email address",
-    ],
-    unique: true,
-    index: true,
-    validate: {
-      validator: () => Promise.resolve(false),
-      message: "Email validation failed",
-    },
-  },
-});
-
-// setting up single points on a map
-const Point = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ["Point"],
-  },
-  coordinates: {
-    type: [Number],
-    index: "2dsphere",
-  },
-});
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const uniqueValidator = require("mongoose-unique-validator");
+const validate = require("mongoose-validator");
+const bcrypt = require("bcryptjs");
+const SALT_WORK_FACTOR = 10;
+const validator = require("email-validator");
 
 const UserSchema = new Schema(
   {
@@ -45,24 +17,23 @@ const UserSchema = new Schema(
       index: true,
     },
     //Our password is hashed with bcrypt
-    password: { type: String, required: true },
-    email: { type: Email },
-    profile: {
-      firstName: String,
-      lastName: String,
-      avatar: String,
-      bio: String,
-      address: {
-        street: String,
-        city: String,
-        state: String,
-        country: String,
-        zip: String,
-        location: {
-          type: Point,
-        },
-      },
+    password: {
+      type: String,
+      required: true,
     },
+    email: {
+      type: String,
+      lowercase: true,
+      required: [true, "can't be blank"],
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please fill a valid email address",
+      ],
+      unique: true,
+      index: true,
+    },
+    posts: [{ type: mongoose.Types.ObjectId, ref: "Post" }],
+
     active: { type: Boolean, default: true },
   },
   {
@@ -106,9 +77,23 @@ UserSchema.pre("save", function (next) {
   }
 });
 
-// function to verify password
-UserSchema.methods.comparePassword = function (plaintext, callback) {
-  return callback(null, bcrypt.compareSync(plaintext, this.password));
-};
+// function to verify email and password
 
-module.exports = mongoose.model("User", UserSchema);
+// UserSchema.statics.findByCredentials = async (email, password, req) => {
+//   const user = await User.findOne({ email: email });
+
+//   if (!email) {
+//     throw new Error("incorrect email or password");
+//   }
+
+//   const isValid = await bcrypt.compare(req.body.password, user.password);
+
+//   if (!isValid) {
+//     throw new Error("incorrect email or password");
+//   }
+
+//   return user;
+// };
+
+const User = mongoose.model("User", UserSchema);
+module.exports = User;
