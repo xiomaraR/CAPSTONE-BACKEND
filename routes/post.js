@@ -34,9 +34,6 @@ router.post("/createpost", (request, response) => {
           title: newPost.title,
           content: newPost.content,
           zipcode: newPost.zipcode,
-          // postedBy: newPost.postedBy
-          // date: newPost.date,
-          // timeStamp: newPost.timeStamp,
         },
 
         message: "The post was saved.",

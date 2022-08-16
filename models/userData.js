@@ -1,10 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const uniqueValidator = require("mongoose-unique-validator");
-const validate = require("mongoose-validator");
 const bcrypt = require("bcryptjs");
 const SALT_WORK_FACTOR = 10;
-const validator = require("email-validator");
 
 const UserSchema = new Schema(
   {
@@ -76,24 +74,6 @@ UserSchema.pre("save", function (next) {
     return next();
   }
 });
-
-// function to verify email and password
-
-// UserSchema.statics.findByCredentials = async (email, password, req) => {
-//   const user = await User.findOne({ email: email });
-
-//   if (!email) {
-//     throw new Error("incorrect email or password");
-//   }
-
-//   const isValid = await bcrypt.compare(req.body.password, user.password);
-
-//   if (!isValid) {
-//     throw new Error("incorrect email or password");
-//   }
-
-//   return user;
-// };
 
 const User = mongoose.model("User", UserSchema);
 module.exports = User;
